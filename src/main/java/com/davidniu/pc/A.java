@@ -1,0 +1,69 @@
+package com.davidniu.pc;
+//线程之间的交替执行
+public class A {
+    public static void main(String[] args) {
+        Data data = new Data();
+        // 创建生产者线程
+        Thread producer = new Thread(() -> {
+            try {
+                for (int i = 0; i < 10; i++) {
+                    data.increment();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "生产者");
+        // 创建消费者线程
+        Thread consumer = new Thread(() -> {
+            try {
+                for (int i = 0; i < 10; i++) {
+                    data.decrement();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "消费者");
+        Thread c = new Thread(() -> {
+            try {
+                for (int i = 0; i < 10; i++) {
+                    data.increment();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "C");
+        Thread d = new Thread(() -> {
+            try {
+                for (int i = 0; i < 10; i++) {
+                    data.decrement();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "D");
+        // 启动线程
+        producer.start();
+        consumer.start();
+        c.start();
+        d.start();
+    }
+}
+class Data {
+    private int number = 0;
+    public synchronized void increment() throws InterruptedException {
+        while (number != 0) {
+            wait();
+        }
+        number++;
+        System.out.println(Thread.currentThread().getName()+"生产者生产了一个产品，当前库存：" + number);
+        notifyAll();
+    }
+    public synchronized void decrement() throws InterruptedException {
+        while (number == 0) {
+            wait();
+        }
+        number--;
+        System.out.println(Thread.currentThread().getName()+"消费者消费了一个产品，当前库存：" + number);
+        notifyAll();
+    }
+}
